@@ -9,3 +9,4 @@
 
 USER_VAL_PRESETS_DIR_NAME = "h3d_cmfp_presets_dir"
 USER_VAL_PRESETS_DIR_INCLUDE_SUBDIRS = "h3d_cmfp_include_subdirs"
+USER_VAL_PRESETS_DIR_SEARCH_PATTERN = "h3d_cmfp_presets_search_pattern"
