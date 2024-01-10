@@ -11,7 +11,7 @@ from h3d_utilites.scripts.h3d_utils import get_directory, get_user_value, set_us
 import h3d_create_materials_from_presets.scripts.h3d_kit_constants as h3dc
 
 
-def browse_preset_dir():
+def browse_preset_dir() -> None:
     path = get_user_value(h3dc.USER_VAL_PRESETS_DIR_NAME)
     dialog_result = get_directory(title="Select Presets directory", path=path)
     if dialog_result:
