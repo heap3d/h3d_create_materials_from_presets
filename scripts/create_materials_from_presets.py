@@ -11,9 +11,10 @@
 # 3. Run Create Materials command
 # ================================
 
-import glob
 import os
+import glob
 import random
+from typing import Union
 
 import lx
 import modo
@@ -30,10 +31,12 @@ class RandomColors:
         self.colors = self.init_colors(self.number_of_colors)
 
     def init_colors(self, number_of_colors: int) -> list[str]:
-        self.colors = [
+        color_strings = [
             " ".join([f"{random.random():.2f}" for j in range(3)])
             for i in range(number_of_colors)
         ]
+
+        return color_strings
 
     def get_random_color_str(self) -> str:
         if not self.colors:
@@ -49,13 +52,15 @@ def get_presets(
     root_dir: str, recursive: bool = False, ext: str = ".lxp", pattern: str = "/**"
 ) -> dict:
     if not root_dir:
-        return []
+        return dict()
+
     search_str = root_dir + pattern
     filenames = [
         i
         for i in glob.glob(pathname=search_str, recursive=recursive)
         if any([i.endswith(j) for j in ext.split()])
     ]
+
     presets: dict[str, dict[str, str]] = {}
     for filename in filenames:
         basename: str = os.path.basename(filename)[:-4]
@@ -94,7 +99,9 @@ def is_group_exist(name: str) -> bool:
     return False
 
 
-def parent_materials(sources: set[modo.Item], target: modo.Item) -> None:
+def parent_materials(sources: set[modo.Item], target: Union[modo.Item, None]) -> None:
+    if not target:
+        return
     for item in sources:
         lx.eval(f"texture.parent {target.id} 1 item:{item.id}")
 
@@ -105,8 +112,10 @@ def create_group(name: str) -> modo.Item:
     lx.eval("item.editorColor white")
     group: modo.Item = modo.Scene().selectedByType(itype=c.MASK_TYPE)[0]
     parent = group.parent
-    children_masks = group.parent.childrenByType(itype=c.MASK_TYPE)
-    group_masks = [i for i in children_masks if i.channel("ptag").get() == ""]
+    if not parent:
+        return group
+    children_masks = parent.childrenByType(itype=c.MASK_TYPE)
+    group_masks = [i for i in children_masks if i.channel("ptag").get() == ""]  # type: ignore
     is_first_subdir = bool((parent == modo.Scene().renderItem) and group_masks)
     parent_index = parent.childCount() - len(group_masks)
     if is_first_subdir:
@@ -114,7 +123,7 @@ def create_group(name: str) -> modo.Item:
             itype=c.DEFAULTSHADER_TYPE
         )
         if default_shaders:
-            parent_index = default_shaders[0].parentIndex - len(group_masks)
+            parent_index = default_shaders[0].parentIndex - len(group_masks)  # type: ignore
     group.setParent(parent, parent_index)
 
     return group
@@ -126,11 +135,12 @@ def select_group(name: str) -> modo.Item:
     return group
 
 
-def set_group(subdirs_str) -> modo.Item:
+def set_group(subdirs_str) -> Union[modo.Item, None]:
     subdirs = [
         subdir for subdir in os.path.normpath(subdirs_str).split(os.sep) if subdir
     ]
     # using folder_name() to distinct GROUP from Material Mask by name
+    latest_group = None
     for subdir in subdirs:
         if not is_group_exist(folder_name(subdir)):
             latest_group = create_group(folder_name(subdir))
@@ -140,7 +150,7 @@ def set_group(subdirs_str) -> modo.Item:
     return latest_group
 
 
-def create_material_mask(preset: dict[str, str], color_str: str) -> modo.Item:
+def create_material_mask(preset: dict[str, str], color_str: str) -> Union[modo.Item, None]:
     basename = preset["basename"]
 
     # set material
@@ -149,7 +159,7 @@ def create_material_mask(preset: dict[str, str], color_str: str) -> modo.Item:
     lx.eval(f'mask.setPTag "{basename}"')
     masks: list[modo.Item] = modo.Scene().selectedByType(itype=c.MASK_TYPE)
     if not masks:
-        return []
+        return None
     new_mask: modo.Item = masks[0]
 
     lx.eval("shader.create advancedMaterial")
@@ -172,7 +182,8 @@ def create_material_mask(preset: dict[str, str], color_str: str) -> modo.Item:
     latest_mask = set_group(subdirs_str)
     # parent new_mask to latest subdir
     parent_pos = 0
-    lx.eval(f"texture.parent {latest_mask.id} {parent_pos} item:{new_mask.id}")
+    if latest_mask:
+        lx.eval(f"texture.parent {latest_mask.id} {parent_pos} item:{new_mask.id}")
 
     return new_mask
 
