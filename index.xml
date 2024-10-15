@@ -5,6 +5,7 @@
 		<source target="h3d_create_materials_from_presets/scripts/browse_presets_dir.py">scripts/browse_presets_dir.py</source>
 		<source target="h3d_create_materials_from_presets/scripts/create_materials_from_presets.py">scripts/create_materials_from_presets.py</source>
 		<source target="h3d_create_materials_from_presets/scripts/h3d_kit_constants.py">scripts/h3d_kit_constants.py</source>
+		<source target="h3d_create_materials_from_presets/scripts/normalize_materials.py">scripts/normalize_materials.py</source>
 	</kit>
 	<message button="Help">h3d_create_materials_from_presets Kit installation complete.</message>
 </package>
