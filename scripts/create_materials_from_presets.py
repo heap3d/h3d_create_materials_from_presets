@@ -103,7 +103,7 @@ def parent_materials(sources: set[modo.Item], target: Union[modo.Item, None]) ->
     if not target:
         return
     for item in sources:
-        lx.eval(f"texture.parent {target.id} 1 item:{item.id}")
+        lx.eval(f"texture.parent {{{target.id}}} 1 item:{{{item.id}}}")
 
 
 def create_group(name: str) -> modo.Item:
@@ -167,7 +167,7 @@ def create_material_mask(preset: dict[str, str], color_str: str) -> Union[modo.I
     lx.eval(f"item.channel advancedMaterial$diffCol {{{color_str}}}")
 
     parent = modo.Scene().renderItem
-    lx.eval(f"texture.parent {parent.id} 1 item:{new_mask.id}")
+    lx.eval(f"texture.parent {{{parent.id}}} 1 item:{{{new_mask.id}}}")
 
     # create folders for subdirs if option enabled
     create_subfolders = 0 != get_user_value(h3dc.USER_VAL_PRESETS_CREATE_SUBFOLDERS)
@@ -183,7 +183,7 @@ def create_material_mask(preset: dict[str, str], color_str: str) -> Union[modo.I
     # parent new_mask to latest subdir
     parent_pos = 0
     if latest_mask:
-        lx.eval(f"texture.parent {latest_mask.id} {parent_pos} item:{new_mask.id}")
+        lx.eval(f"texture.parent {{{latest_mask.id}}} {parent_pos} item:{{{new_mask.id}}}")
 
     return new_mask
 
